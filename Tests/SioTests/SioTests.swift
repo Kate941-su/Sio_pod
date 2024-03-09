@@ -1,12 +1,11 @@
 import XCTest
+
 @testable import Sio
 
 final class SioTests: XCTestCase {
-    func testExample() throws {
-        // XCTest Documentation
-        // https://developer.apple.com/documentation/xctest
-
-        // Defining Test Cases and Test Methods
-        // https://developer.apple.com/documentation/xctest/defining_test_cases_and_test_methods
-    }
+  func testExample() async throws {
+    let sio = Sio(options: BaseOptions())
+    await sio.callGetJsonRequest()
+    await sio.callGetJson404Request()
+  }
 }
