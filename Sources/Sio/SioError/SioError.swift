@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by KaitoKitaya on 2024/03/09.
 //
@@ -9,28 +9,46 @@ import Foundation
 
 public class SioError: Error {
   let message: String
-  let responseCode: ResponseCode?
+  let statusCode: StatusCode?
   let body: Any?
-  
-  private init(message: String, responseCode: ResponseCode? = nil, body: Any? = nil){
+
+  private init(message: String, statusCode: StatusCode? = nil, body: Any? = nil) {
     self.message = message
-    self.responseCode = responseCode
+    self.statusCode = statusCode
     self.body = body
   }
-  
-  static public var inValidUrl: SioError {
-   return SioError(
-    message: "Invalid URL")
-  }
-  
-  static public var unknown: SioError {
+
+  static public func inValidUrl(
+    body: Any? = nil
+  ) -> SioError {
     return SioError(
-     message: "Unknown Error")
+      message: "Invalid URL",
+      body: body
+    )
   }
 
-  static public var debugging: SioError {
+  static public func unknown(
+    body: Any? = nil
+  ) -> SioError {
     return SioError(
-     message: "Only For Debugging")
+      message: "Unknown Error",
+      body: body
+    )
   }
-  
+
+  static public func debugging(
+    body: Any? = nil
+  ) -> SioError {
+    return SioError(
+      message: "Only For Debugging",
+      body: body
+    )
+  }
+
+  static public func errorDataHandling(body: Any? = nil) -> SioError {
+    return SioError(
+      message: "Data Parse Missing",
+      body: body
+    )
+  }
 }

@@ -8,8 +8,8 @@ let mocked_get_json_url = "http://127.0.0.1:8000/api/healthChecker"
 let mocked_get_404_url = "http://127.0.0.1:8000/api/healthCheckers"
 
 @available(iOS 13.0, macOS 12.0, *)
-public struct Sio {
-  
+public struct Sio : SioRepository {
+
   let session: URLSession = {
     // If you create not to cache on your device
     // You have to implement configration type would be .ephemeral
@@ -23,7 +23,7 @@ public struct Sio {
     self.baseOptions = options ?? BaseOptions()
   }
 
-  public func get (
+  public func get(
     path: String,
     data: Any?,
     queryParameters: [String: Any]?,
@@ -32,7 +32,7 @@ public struct Sio {
     onSendProgress: ProgressCallback?,
     onReceiveProgress: ProgressCallback?
   ) async throws -> Response {
-    
+
     let requestOptions: OptionProtcol = {
       if options != nil {
         return options!
@@ -43,8 +43,8 @@ public struct Sio {
     // TODO: implement
     fatalError()
   }
-  
-  public func getUri (
+
+  public func getUri(
     uri: URL,
     data: Any?,
     queryParameters: [String: Any]?,
@@ -82,7 +82,7 @@ public struct Sio {
     // TODO: implement
     fatalError()
   }
-  
+
   public func download(
     path: String,
     data: Any?,
@@ -106,7 +106,7 @@ public struct Sio {
     // TODO: implement
     fatalError()
   }
-  
+
   // After v1?
   public func upload(
     uri: URL,
@@ -118,7 +118,7 @@ public struct Sio {
   ) async throws -> Response {
     fatalError()
   }
-  
+
   func connectUri(baseUri: URL, path: String) -> URL {
     if #available(iOS 16, macOS 13, *) {
       return baseUri.appending(path: path)
@@ -126,86 +126,129 @@ public struct Sio {
       return baseUri.appendingPathComponent(path)
     }
   }
-  
+
   func request(
     options: OptionProtcol,
+    requestMethod: RequestMethod?,
     onSendProgress: ProgressCallback?,
     onReceiveProgress: ProgressCallback?
   ) async throws -> Response {
     // TODO: implement
     fatalError()
   }
+
+  func encodeRequest(options: OptionProtcol, requestMethod: RequestMethod?) throws -> URLRequest {
+    guard let baseUri = options.baseURI else {
+      throw SioError.inValidUrl()
+    }
+
+    let uri = connectUri(baseUri: baseUri, path: options.path ?? "")
+
+    /// The simplest usage
+    var request = URLRequest(url: uri)
+    
+    if let timeout = options.timeout {
+      request.timeoutInterval = timeout
+    }
+
+    /// Handling Request Method
+    if let requestMethod = requestMethod {
+      switch requestMethod {
+      case .GET:
+        request.httpMethod = RequestMethod.GET.rawValue
+      case .POST:
+        request.httpMethod = RequestMethod.POST.rawValue
+      case .PUT:
+        request.httpMethod = RequestMethod.PUT.rawValue
+      }
+    } else {
+      request.httpMethod = RequestMethod.GET.rawValue
+    }
+    
+    /// Handling Request Body
+    if let data = options.data {
+      request.httpBody = data
+    }
+    
+    /// Handling Request HTTP Header
+    if let requestHeaders = options.requestHeader {
+      for requestHeader in requestHeaders {
+        request.setValue(requestHeader.headerValue, forHTTPHeaderField: requestHeader.headerField)
+      }
+    }
+    
+    /// Handling Request Query Parameters
+    if let queryParameters = options.queryParameters {
+      var urlComponetns = URLComponents(string: uri.absoluteString)!
+      var res: [URLQueryItem] = []
+      for (key, value) in queryParameters {
+        res.append(URLQueryItem(name: key, value: value as? String))
+      }
+      urlComponetns.queryItems = res
+      request.url = urlComponetns.url
+    }
+    return request
+  }
+
+  //  func decodeResponse() -> Response {
+  //    return Response()
+  //  }
   
   // @forTesting
-  public func mockedRequestByPath(options: OptionProtcol) async throws -> Response {
+  public func mockedRequestByPath(options: OptionProtcol, requestMethod: RequestMethod) async throws -> Response {
     guard let baseUri = options.baseURI else {
-      throw SioError.inValidUrl
+      throw SioError.inValidUrl()
     }
     // http://localhost/ + /path/to/source
     let uri = connectUri(baseUri: baseUri, path: options.path ?? "")
-    print("=====debug print options======")
-    print("options.baseURI: \(String(describing: options.baseURI))")
-    print("options.path: \(String(describing: options.path))")
-    print("options.query: \(String(describing: options.queryParameters))")
-    print("options.uri: \(String(describing: options.mimeType))")
-    print("options.uri: \(String(describing: options.requestHeader))")
-    print("options.uri: \(String(describing: options.requestMethod))")
-    print("options.uri: \(String(describing: options.timeout))")
-    print("=============================")
+    
+    Util.debugPrint(title: "URL") {
+      print("URL: \(uri)")
+    }
+    
+    Util.debugPrint(title: "Print Options") {
+      print("options.baseURI: \(String(describing: options.baseURI))")
+      print("options.path: \(String(describing: options.path))")
+      print("options.query: \(String(describing: options.queryParameters))")
+      print("options.mimeType: \(String(describing: options.mimeType))")
+      print("options.requestHeader: \(String(describing: options.requestHeader))")
+      print("options.timeout: \(String(describing: options.timeout))")
+    }
+    
     do {
-        let result = try await session.data(from: uri)
-        print("Response Result is\(result)")
-        return decodeResponse()
+      let request = try encodeRequest(options: options, requestMethod: requestMethod)
+      let (data, response) = try await session.data(for: request)
+
+      Util.debugPrint(title: "Response Data") {
+        print("Data: \(data)")
+      }
+      
+      Util.debugPrint(title: "Response Header") {
+        print("Response \(response)")
+      }
+
+      do {
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+          throw SioError.errorDataHandling()
+        }
+        return Response(
+          data: json,
+          statusCode: .ok,
+          responseType: .json,
+          date: Date(),  // TODO: Parse for valid format
+          contentLength: 0)  // TODO: Parse for valid format
+      } catch {
+        throw SioError.errorDataHandling()
+      }
     } catch {
-      print("Error Response is \(error)")
-      throw SioError.debugging
+      Util.debugPrint(title: "Print Options") {
+        print("Error Response is \(error)")
+      }
+      throw SioError.debugging()
     }
   }
-  
-  func encodeRequest() {
-    
-  }
-  
-  func decodeResponse() -> Response {
-    return Response()
-  }
-  
-  
+
   public func mockedRequestByUri(options: OptionProtcol) async {
-    
-  }
-  
-  func callGetJsonRequest() async {
-    let session: URLSession = {
-      let config = URLSessionConfiguration.default
-      return URLSession(configuration: config)
-    }()
-    // TODO: Validation
-    let url = URL(string: mocked_get_json_url)!
-    let urlRequest = URLRequest(url: url)
-    do {
-      let result = try await session.data(for: urlRequest)
-      print(result)
-    } catch {
-      print(error)
-    }
-  }
 
-  // @forTesting
-  func callGetJson404Request() async {
-    let session: URLSession = {
-      let config = URLSessionConfiguration.default
-      return URLSession(configuration: config)
-    }()
-    // TODO: Validation
-    let url = URL(string: mocked_get_404_url)!
-    let urlRequest = URLRequest(url: url)
-    do {
-      let result = try await session.data(for: urlRequest)
-      print(result)
-    } catch {
-      print(error)
-    }
   }
-
 }

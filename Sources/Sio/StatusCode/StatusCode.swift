@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by KaitoKitaya on 2024/03/09.
 //
@@ -35,7 +35,7 @@ public enum StatusCode: Int {
   case service_unavailable = 503
   case gateway_timeout = 504
   case http_version_not_supported = 505
-  
+
   public var name: String {
     switch self {
     case .continuous:
@@ -94,5 +94,5 @@ public enum StatusCode: Int {
       return "HTTP Version Not Supported"
     }
   }
-  
+
 }
