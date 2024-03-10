@@ -120,7 +120,7 @@ public struct Sio {
   }
   
   func connectUri(baseUri: URL, path: String) -> URL {
-    if #available(iOS 16, *) {
+    if #available(iOS 16, macOS 13, *) {
       return baseUri.appending(path: path)
     } else {
       return baseUri.appendingPathComponent(path)
@@ -143,9 +143,15 @@ public struct Sio {
     }
     // http://localhost/ + /path/to/source
     let uri = connectUri(baseUri: baseUri, path: options.path ?? "")
-    let query = options.queryParameters
-    let requestMethod: RequestMethod = options.requestMethod ?? .GET
-    let timeout = options.timeout
+    print("=====debug print options======")
+    print("options.baseURI: \(String(describing: options.baseURI))")
+    print("options.path: \(String(describing: options.path))")
+    print("options.query: \(String(describing: options.queryParameters))")
+    print("options.uri: \(String(describing: options.mimeType))")
+    print("options.uri: \(String(describing: options.requestHeader))")
+    print("options.uri: \(String(describing: options.requestMethod))")
+    print("options.uri: \(String(describing: options.timeout))")
+    print("=============================")
     do {
         let result = try await session.data(from: uri)
         print("Response Result is\(result)")
