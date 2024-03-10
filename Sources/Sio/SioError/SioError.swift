@@ -51,4 +51,21 @@ public class SioError: Error {
       body: body
     )
   }
+
+  static public func decodeError(body: Any? = nil) -> SioError {
+    return SioError(message: "Could not parse response")
+  }
+
+  static public func unknownStatusCode(statusCode: Int) -> SioError {
+    return SioError(message: "Status Code '\(statusCode)' is unknown. Please Implement Imedietely.")
+  }
+
+  static public func unknownMimeType(mimeTypeString: String) -> SioError {
+    return SioError(message: "Mime Type '\(mimeTypeString)' is unknown. Please Implement Imedietely")
+  }
+  
+  static public func stringDateFormatError(body: Any? = nil) -> SioError {
+    return SioError(message: "Missing to format Date")
+  }
+  
 }

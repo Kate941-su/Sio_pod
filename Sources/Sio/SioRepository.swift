@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by KaitoKitaya on 2024/03/10.
 //
@@ -38,7 +38,7 @@ protocol SioRepository {
     onReceiveProgress: ProgressCallback?
   ) async throws -> Response
 
- func postUri(
+  func postUri(
     uri: URL,
     data: Any?,
     queryParameters: [String: Any]?,
@@ -48,7 +48,7 @@ protocol SioRepository {
     onReceiveProgress: ProgressCallback?
   ) async throws -> Response
 
- func download(
+  func download(
     path: String,
     data: Any?,
     queryParameters: [String: Any]?,
@@ -84,4 +84,6 @@ protocol SioRepository {
   ) async throws -> Response
 
   func encodeRequest(options: OptionProtcol, requestMethod: RequestMethod?) throws -> URLRequest
+
+  func decodeResponse(options: OptionProtcol, data: Data, response: URLResponse) throws -> Response
 }

@@ -32,5 +32,5 @@ final class SioRealConnectionTest: XCTestCase {
 }
 
 final class SioMockTest: XCTestCase {
-  
+
 }

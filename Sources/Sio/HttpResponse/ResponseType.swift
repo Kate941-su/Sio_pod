@@ -10,13 +10,14 @@ import Foundation
 public enum ResponseType {
   /// Transform the response data to JSON object only when the
   /// content-type of response is "application/json" .
+  /// The type will be [String: Any]
   case json
 
-  /// Transform the response data to an UTF-8 encoded [String].
-  case plain
+  /// Transform the response data to an UTF-8 encoded String.
+  case string
 
-  /// Get the original bytes, the [Response.data] will be [List<int>].
-  case bytes
+  /// Get the original bytes, the [Response.data] will be Data.
+  case data
 
   /// Get the response stream directly,
   /// the [Response.data] will be [ResponseBody].
