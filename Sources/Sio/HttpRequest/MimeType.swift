@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum MimeType: String {
+public enum MimeType: String {
   case form_data = "application/x-www-form-urlencoded"
   case octet_stream = "application/octet-stream"
   case xml = "application/xml"

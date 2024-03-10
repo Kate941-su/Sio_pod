@@ -41,57 +41,57 @@ public enum StatusCode: Int {
     case .continuous:
       return "Continue"
     case .switching_protocols:
-      return "Continue"
+      return "Switching Protocols"
     case .processing:
-      return "Continue"
+      return "Processing"
     case .ok:
-      return "Continue"
+      return "OK"
     case .created:
-      return "Continue"
+      return "Created"
     case .accepted:
-      return "Continue"
+      return "Accepted"
     case .no_content:
-      return "Continue"
+      return "No Content"
     case .partial_content:
-      return "Continue"
+      return "Partial Content"
     case .multiple_choices:
-      return "Continue"
+      return "Multiple Choices"
     case .moved_permanently:
-      return "Continue"
+      return "Moved Permanently"
     case .found:
-      return "Continue"
+      return "Found"
     case .not_modified:
-      return "Continue"
+      return "Not Modified"
     case .temporary_redirect:
-      return "Continue"
+      return "Temporary Redirect"
     case .permanent_redirect:
-      return "Continue"
+      return "Permanent Redirect"
     case .bad_request:
-      return "Continue"
+      return "Bad Request"
     case .unauthorized:
-      return "Continue"
+      return "Unauthorized"
     case .forbidden:
-      return "Continue"
+      return "Forbidden"
     case .not_found:
-      return "Continue"
+      return "Not Found"
     case .method_not_allowed:
-      return "Continue"
+      return "Method Not Allowed"
     case .request_timeout:
-      return "Continue"
+      return "Request Timeout"
     case .too_many_requests:
-      return "Continue"
+      return "Too Many Requests"
     case .internal_server_error:
-      return "Continue"
+      return "Internal Server Error"
     case .not_implemented:
-      return "Continue"
+      return "Not Implemented"
     case .bad_gateway:
-      return "Continue"
+      return "Bad Gateway"
     case .service_unavailable:
-      return "Continue"
+      return "Service Unavailable"
     case .gateway_timeout:
-      return "Continue"
+      return "Gateway Timeout"
     case .http_version_not_supported:
-      return "Continue"
+      return "HTTP Version Not Supported"
     }
   }
   
