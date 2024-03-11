@@ -19,53 +19,51 @@ public class SioError: Error {
   }
 
   static public func inValidUrl(
-    body: Any? = nil
+    path: URL?
   ) -> SioError {
     return SioError(
-      message: "Invalid URL",
-      body: body
-    )
-  }
-
-  static public func unknown(
-    body: Any? = nil
-  ) -> SioError {
-    return SioError(
-      message: "Unknown Error",
-      body: body
-    )
+      message: "[Invalid URL]: A path of \(String(describing: path)) is invalid.")
   }
 
   static public func debugging(
     body: Any? = nil
   ) -> SioError {
     return SioError(
-      message: "Only For Debugging",
+      message: "[Debugging] Only For Debugging.",
       body: body
     )
   }
 
   static public func errorDataHandling(body: Any? = nil) -> SioError {
     return SioError(
-      message: "Data Parse Missing",
+      message: "[Error Data Handling] Could not parse data got by URL Session.",
       body: body
     )
   }
 
   static public func decodeError(body: Any? = nil) -> SioError {
-    return SioError(message: "Could not parse response")
+    return SioError(message: "[Decord Error] Could not decode URL Session Response.")
   }
 
   static public func unknownStatusCode(statusCode: Int) -> SioError {
-    return SioError(message: "Status Code '\(statusCode)' is unknown. Please Implement Imedietely.")
+    return SioError(message: "[Unknow Status Code] Status Code '\(statusCode)' is unknown. Please Implement Imedietely.")
   }
 
   static public func unknownMimeType(mimeTypeString: String) -> SioError {
-    return SioError(message: "Mime Type '\(mimeTypeString)' is unknown. Please Implement Imedietely")
+    return SioError(message: "[Unknow Mime Type]Mime Type '\(mimeTypeString)' is unknown. Please Implement Imedietely.")
   }
   
   static public func stringDateFormatError(body: Any? = nil) -> SioError {
-    return SioError(message: "Missing to format Date")
+    return SioError(message: "[String Date Format Error] Could not format starting based date.")
+  }
+  
+  static public func unknown(
+    body: Any? = nil
+  ) -> SioError {
+    return SioError(
+      message: "[UnKnow] Unknown Error.",
+      body: body
+    )
   }
   
 }

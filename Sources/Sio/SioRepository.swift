@@ -77,13 +77,21 @@ protocol SioRepository {
   ) async throws -> Response
 
   func request(
+    uri: URL,
     options: OptionProtcol,
-    requestMethod: RequestMethod?,
+    requestMethod: RequestMethod,
     onSendProgress: ProgressCallback?,
     onReceiveProgress: ProgressCallback?
   ) async throws -> Response
 
-  func encodeRequest(options: OptionProtcol, requestMethod: RequestMethod?) throws -> URLRequest
+  func encodeRequest(
+    uri: URL,
+    options: OptionProtcol,
+    requestMethod: RequestMethod?
+  ) throws -> URLRequest
 
-  func decodeResponse(options: OptionProtcol, data: Data, response: URLResponse) throws -> Response
+  func decodeResponse(
+    options: OptionProtcol,
+    data: Data,
+    response: URLResponse) throws -> Response
 }

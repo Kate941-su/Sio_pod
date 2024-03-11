@@ -10,8 +10,8 @@ let mocked_get_404_url = "http://127.0.0.1:8000/api/healthCheckers"
 @available(iOS 13.0, macOS 12.0, *)
 public struct Sio: SioRepository {
   let session: URLSession = {
-    // If you create not to cache on your device
-    // You have to implement configration type would be .ephemeral
+    /// If you create not to cache on your device
+    /// You have to implement configration type would be .ephemeral.
     let configration = URLSessionConfiguration.default
     return URLSession(configuration: configration)
   }()
@@ -24,33 +24,31 @@ public struct Sio: SioRepository {
 
   public func get(
     path: String,
-    data: Any?,
-    queryParameters: [String: Any]?,
-    cancelToken: CancelToken?,
-    options: OptionProtcol?,
-    onSendProgress: ProgressCallback?,
-    onReceiveProgress: ProgressCallback?
+    data: Any? = nil,
+    queryParameters: [String: Any]? = nil,
+    cancelToken: CancelToken? = nil,
+    options: OptionProtcol? = nil,
+    onSendProgress: ProgressCallback? = nil,
+    onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
-
-    let requestOptions: OptionProtcol = {
-      if options != nil {
-        return options!
-      } else {
-        return baseOptions
-      }
-    }()
-    // TODO: implement
-    fatalError()
+    let baseUri: URL? = options?.baseURI ?? baseOptions.baseURI
+    guard let uri = connectUri(baseUri: baseUri, path: path) else {
+      throw SioError.inValidUrl(path: URL(string: path)!)
+    }
+    return try await request(
+      uri: uri,
+      options: options ?? baseOptions,
+      requestMethod: .GET)
   }
 
   public func getUri(
     uri: URL,
-    data: Any?,
-    queryParameters: [String: Any]?,
-    cancelToken: CancelToken?,
-    options: OptionProtcol?,
-    onSendProgress: ProgressCallback?,
-    onReceiveProgress: ProgressCallback?
+    data: Any? = nil,
+    queryParameters: [String: Any]? = nil,
+    cancelToken: CancelToken? = nil,
+    options: OptionProtcol? = nil,
+    onSendProgress: ProgressCallback? = nil,
+    onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
     // TODO: implement
     fatalError()
@@ -58,12 +56,12 @@ public struct Sio: SioRepository {
 
   public func post(
     path: String,
-    data: Any?,
-    queryParameters: [String: Any]?,
-    cancelToken: CancelToken?,
-    options: OptionProtcol?,
-    onSendProgress: ProgressCallback?,
-    onReceiveProgress: ProgressCallback?
+    data: Any? = nil,
+    queryParameters: [String: Any]? = nil,
+    cancelToken: CancelToken? = nil,
+    options: OptionProtcol? = nil,
+    onSendProgress: ProgressCallback? = nil,
+    onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
     // TODO: implement
     fatalError()
@@ -71,12 +69,12 @@ public struct Sio: SioRepository {
 
   public func postUri(
     uri: URL,
-    data: Any?,
-    queryParameters: [String: Any]?,
-    cancelToken: CancelToken?,
-    options: OptionProtcol?,
-    onSendProgress: ProgressCallback?,
-    onReceiveProgress: ProgressCallback?
+    data: Any? = nil,
+    queryParameters: [String: Any]? = nil,
+    cancelToken: CancelToken? = nil,
+    options: OptionProtcol? = nil,
+    onSendProgress: ProgressCallback? = nil,
+    onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
     // TODO: implement
     fatalError()
@@ -84,11 +82,11 @@ public struct Sio: SioRepository {
 
   public func download(
     path: String,
-    data: Any?,
-    queryParameters: [String: Any]?,
-    cancelToken: CancelToken?,
-    options: OptionProtcol?,
-    onSendProgress: ProgressCallback?
+    data: Any? = nil,
+    queryParameters: [String: Any]? = nil,
+    cancelToken: CancelToken? = nil,
+    options: OptionProtcol? = nil,
+    onSendProgress: ProgressCallback? = nil
   ) async throws -> Response {
     // TODO: implement
     fatalError()
@@ -96,11 +94,11 @@ public struct Sio: SioRepository {
 
   public func downloadUri(
     uri: URL,
-    data: Any?,
-    queryParameters: [String: Any]?,
-    cancelToken: CancelToken?,
-    options: OptionProtcol?,
-    onSendProgress: ProgressCallback?
+    data: Any? = nil,
+    queryParameters: [String: Any]? = nil,
+    cancelToken: CancelToken? = nil,
+    options: OptionProtcol? = nil,
+    onSendProgress: ProgressCallback? = nil
   ) async throws -> Response {
     // TODO: implement
     fatalError()
@@ -109,16 +107,19 @@ public struct Sio: SioRepository {
   // After v1?
   public func upload(
     uri: URL,
-    data: Any?,
-    queryParameters: [String: Any]?,
-    cancelToken: CancelToken?,
-    options: OptionProtcol?,
-    onSendProgress: ProgressCallback?
+    data: Any? = nil,
+    queryParameters: [String: Any]? = nil,
+    cancelToken: CancelToken? = nil,
+    options: OptionProtcol? = nil,
+    onSendProgress: ProgressCallback? = nil
   ) async throws -> Response {
     fatalError()
   }
 
-  func connectUri(baseUri: URL, path: String) -> URL {
+  func connectUri(baseUri: URL?, path: String) -> URL? {
+    guard let baseUri else {
+      return URL(string: path)
+    }
     if #available(iOS 16, macOS 13, *) {
       return baseUri.appending(path: path)
     } else {
@@ -127,21 +128,29 @@ public struct Sio: SioRepository {
   }
 
   func request(
+    uri: URL,
     options: OptionProtcol,
-    requestMethod: RequestMethod?,
-    onSendProgress: ProgressCallback?,
-    onReceiveProgress: ProgressCallback?
+    requestMethod: RequestMethod,
+    onSendProgress: ProgressCallback? = nil,
+    onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
-    // TODO: implement
-    fatalError()
+      let finalOptions = getFinalOptions(requestOptions: options)
+    
+      print("You are trying to connect to the URL: \(uri)")
+      let request = try encodeRequest(uri: uri, options: finalOptions, requestMethod: requestMethod)
+    
+      print("You get a response by URL Session.")
+      let (data, response) = try await session.data(for: request)
+
+      print("Decode for SioResponse")
+      let sioResponse = try decodeResponse(options: finalOptions, data: data, response: response)
+      return sioResponse
   }
 
-  func encodeRequest(options: OptionProtcol, requestMethod: RequestMethod?) throws -> URLRequest {
+  func encodeRequest(uri: URL, options: OptionProtcol, requestMethod: RequestMethod?) throws -> URLRequest {
     guard let baseUri = options.baseURI else {
-      throw SioError.inValidUrl()
+      throw SioError.inValidUrl(path: uri)
     }
-
-    let uri = connectUri(baseUri: baseUri, path: options.path ?? "")
 
     /// The simplest usage
     var request = URLRequest(url: uri)
@@ -207,30 +216,62 @@ public struct Sio: SioRepository {
     else {
       throw SioError.unknownStatusCode(statusCode: httpURLResponse.statusCode)
     }
-    guard let stringDate = httpURLResponse.allHeaderFields["Date"] as? String,
-          let date = DateFormatterWrapper.shared.dateFormatter.date(from: stringDate) else {
+    
+    // TODO: Connect stringDate and date
+    guard let stringDate = httpURLResponse.allHeaderFields["Date"] as? String else {
+      print("HTTP Header Parse Error")
       throw SioError.stringDateFormatError()
     }
+    
+    Util.debugPrint(title: "String Date"){
+      print("\(stringDate)")
+    }
+    
+    guard let date = stringDate.
     return Response(
       data: data,
       statusCode: statusCode,
       mimeType: mimeType,
       date: date,
-      contentLength: Int(contentLength))
+      contentLength: Int(contentLength),
+      responseHeader: response
+    )
+  }
+  
+  /// Option has a priority.
+  ///  1. RequestOption
+  ///  2. BaseOption
+  ///  If RequestOption has a non nil option field, this field would apply RequestOption's filed.
+  ///  If the field is nil in RequestOption, the field of BaseOption would apply
+  func getFinalOptions(requestOptions: OptionProtcol) -> OptionProtcol {
+    return BaseOptions(
+      baseURI: requestOptions.baseURI ?? baseOptions.baseURI,
+      path: requestOptions.path ?? baseOptions.path,
+      data: requestOptions.data ?? baseOptions.data,
+      queryParameters: requestOptions.queryParameters ?? baseOptions.queryParameters,
+      requestHeader: requestOptions.requestHeader ?? baseOptions.requestHeader,
+      responseType: requestOptions.responseType ?? baseOptions.responseType,
+      cancelToken: requestOptions.cancelToken ?? requestOptions.cancelToken,
+      mimeType: requestOptions.mimeType ?? requestOptions.mimeType,
+      timeout: requestOptions.timeout ?? requestOptions.timeout
+    )
   }
 
-  // @forTesting
+  
+  /// @For Testing
   public func mockedRequestByPath(options: OptionProtcol, requestMethod: RequestMethod) async throws
     -> Response
   {
     guard let baseUri = options.baseURI else {
-      throw SioError.inValidUrl()
+      throw SioError.inValidUrl(path: nil)
     }
     // http://localhost/ + /path/to/source
-    let uri = connectUri(baseUri: baseUri, path: options.path ?? "")
+    guard let uri = connectUri(baseUri: baseUri, path: options.path ?? "") else {
+      throw SioError.inValidUrl(path: nil)
+    }
 
     Util.debugPrint(title: "URL") {
-      print("URL: \(uri)")
+      print("URL: \(String(describing: uri))")
     }
 
     Util.debugPrint(title: "Print Options") {
@@ -243,7 +284,7 @@ public struct Sio: SioRepository {
     }
 
     do {
-      let request = try encodeRequest(options: options, requestMethod: requestMethod)
+      let request = try encodeRequest(uri: uri, options: options, requestMethod: requestMethod)
       let (data, response) = try await session.data(for: request)
 
       Util.debugPrint(title: "Response Data") {
@@ -263,7 +304,9 @@ public struct Sio: SioRepository {
           statusCode: .ok,
           mimeType: mimeType,
           date: Date(),  // TODO: Parse for valid format
-          contentLength: 0)  // TODO: Parse for valid format
+          contentLength: 0,
+          responseHeader: response
+        )  // TODO: Parse for valid format
 
     } catch {
       Util.debugPrint(title: "Print Options") {

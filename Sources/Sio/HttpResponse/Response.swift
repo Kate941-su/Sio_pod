@@ -13,14 +13,16 @@ public class Response {
   let mimeType: MimeType
   let date: Date
   let contentLength: Int
+  let respnseHeader: URLResponse
 
   init(
-    data: Data, statusCode: StatusCode, mimeType: MimeType, date: Date, contentLength: Int
+    data: Data, statusCode: StatusCode, mimeType: MimeType, date: Date, contentLength: Int, responseHeader: URLResponse
   ) {
     self.data = data
     self.statusCode = statusCode
     self.mimeType = mimeType
     self.date = date
     self.contentLength = contentLength
+    self.respnseHeader = responseHeader
   }
 }
