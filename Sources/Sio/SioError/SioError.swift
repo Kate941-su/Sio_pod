@@ -46,17 +46,21 @@ public class SioError: Error {
   }
 
   static public func unknownStatusCode(statusCode: Int) -> SioError {
-    return SioError(message: "[Unknow Status Code] Status Code '\(statusCode)' is unknown. Please Implement Imedietely.")
+    return SioError(
+      message:
+        "[Unknow Status Code] Status Code '\(statusCode)' is unknown. Please Implement Imedietely.")
   }
 
   static public func unknownMimeType(mimeTypeString: String) -> SioError {
-    return SioError(message: "[Unknow Mime Type]Mime Type '\(mimeTypeString)' is unknown. Please Implement Imedietely.")
+    return SioError(
+      message:
+        "[Unknow Mime Type]Mime Type '\(mimeTypeString)' is unknown. Please Implement Imedietely.")
   }
-  
+
   static public func stringDateFormatError(body: Any? = nil) -> SioError {
     return SioError(message: "[String Date Format Error] Could not format starting based date.")
   }
-  
+
   static public func unknown(
     body: Any? = nil
   ) -> SioError {
@@ -65,5 +69,5 @@ public class SioError: Error {
       body: body
     )
   }
-  
+
 }

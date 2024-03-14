@@ -88,10 +88,11 @@ protocol SioRepository {
     uri: URL,
     options: OptionProtcol,
     requestMethod: RequestMethod?
-  ) throws -> URLRequest
+  ) throws -> URLRequest?
 
   func decodeResponse(
     options: OptionProtcol,
     data: Data,
-    response: URLResponse) throws -> Response
+    response: URLResponse
+  ) throws -> Response
 }

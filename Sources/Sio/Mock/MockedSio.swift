@@ -68,7 +68,7 @@ public struct MockedSio: SioRepository {
   }
 
   func downloadUri(
-    uri: URL, 
+    uri: URL,
     data: Any?,
     queryParameters: [String: Any]?,
     cancelToken: CancelToken?,
@@ -81,9 +81,9 @@ public struct MockedSio: SioRepository {
   func upload(
     uri: URL,
     data: Any?,
-    queryParameters: [String: Any]?, 
+    queryParameters: [String: Any]?,
     cancelToken: CancelToken?,
-    options: (any OptionProtcol)?, 
+    options: (any OptionProtcol)?,
     onSendProgress: ProgressCallback?
   ) async throws -> Response {
     fatalError()
@@ -102,14 +102,16 @@ public struct MockedSio: SioRepository {
   func encodeRequest(
     uri: URL,
     options: any OptionProtcol,
-    requestMethod: RequestMethod?) throws -> URLRequest {
+    requestMethod: RequestMethod?
+  ) throws -> URLRequest? {
     fatalError()
   }
 
   func decodeResponse(
     options: any OptionProtcol,
     data: Data,
-    response: URLResponse) -> Response {
+    response: URLResponse
+  ) -> Response {
     fatalError()
   }
 

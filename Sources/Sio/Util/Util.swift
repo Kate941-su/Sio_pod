@@ -16,9 +16,9 @@ class Util {
     print("===== END \(title) =====")
     print("\n")
   }
-  
+
   static public var emptyUri: URL {
     return URL(string: "")!
   }
-  
+
 }
