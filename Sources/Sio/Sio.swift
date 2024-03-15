@@ -64,8 +64,14 @@ public struct Sio: SioRepository {
     onSendProgress: ProgressCallback? = nil,
     onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
-    // TODO: implement
-    fatalError()
+    let baseUri: URL? = options?.baseURI ?? baseOptions.baseURI
+    guard let uri = connectUri(baseUri: baseUri, path: path) else {
+      throw SioError.inValidUrl(path: URL(string: path))
+    }
+    return try await request(
+      uri: uri,
+      options: options ?? baseOptions,
+      requestMethod: .POST)
   }
 
   public func postUri(
@@ -137,17 +143,17 @@ public struct Sio: SioRepository {
   ) async throws -> Response {
     let finalOptions = getFinalOptions(requestOptions: options)
 
-    print("You are trying to connect to the URL: \(uri)")
+    print("You are trying to connect to the URL: \(uri)\n")
     guard
       let request = try encodeRequest(uri: uri, options: finalOptions, requestMethod: requestMethod)
     else {
       throw SioError.inValidUrl(path: uri)
     }
 
-    print("You get a response by URL Session.")
+    print("You get a response by URL Session.\n")
     let (data, response) = try await session.data(for: request)
 
-    print("Decode for SioResponse")
+    print("Decode for SioResponse\n")
     let sioResponse = try decodeResponse(options: finalOptions, data: data, response: response)
     return sioResponse
   }
@@ -155,7 +161,7 @@ public struct Sio: SioRepository {
   func encodeRequest(uri: URL, options: OptionProtcol, requestMethod: RequestMethod?) throws
     -> URLRequest?
   {
-    guard let baseUri = options.baseURI else {
+    guard (options.baseURI) != nil else {
       return nil
     }
 
@@ -181,8 +187,8 @@ public struct Sio: SioRepository {
     }
 
     /// Handling Request Body
-    if let data = options.data {
-      request.httpBody = data
+    if let requestBody = options.body {
+      request.httpBody = requestBody
     }
 
     /// Handling Request HTTP Header
@@ -197,7 +203,7 @@ public struct Sio: SioRepository {
       var urlComponetns = URLComponents(string: uri.absoluteString)!
       var res: [URLQueryItem] = []
       for (key, value) in queryParameters {
-        res.append(URLQueryItem(name: key, value: value as? String))
+        res.append(URLQueryItem(name: key, value: value))
       }
       urlComponetns.queryItems = res
       request.url = urlComponetns.url
@@ -241,7 +247,7 @@ public struct Sio: SioRepository {
     dateFormatter.locale = Locale(identifier: "en_US_POSIX")
     dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
     dateFormatter.dateFormat = String.DateFormatType.httpHeader.stringFormat
-    guard let date = dateFormatter.date(from: dummyDate) else {
+    guard let date = dateFormatter.date(from: stringDate) else {
       print("Could not date parse.")
       throw SioError.stringDateFormatError()
     }
@@ -261,11 +267,11 @@ public struct Sio: SioRepository {
   ///  2. BaseOption
   ///  If RequestOption has a non nil option field, this field would apply RequestOption's filed.
   ///  If the field is nil in RequestOption, the field of BaseOption would apply
-  func getFinalOptions(requestOptions: OptionProtcol) -> OptionProtcol {
+  private func getFinalOptions(requestOptions: OptionProtcol) -> OptionProtcol {
     return BaseOptions(
       baseURI: requestOptions.baseURI ?? baseOptions.baseURI,
       path: requestOptions.path ?? baseOptions.path,
-      data: requestOptions.data ?? baseOptions.data,
+      body: requestOptions.body ?? baseOptions.body,
       queryParameters: requestOptions.queryParameters ?? baseOptions.queryParameters,
       requestHeader: requestOptions.requestHeader ?? baseOptions.requestHeader,
       responseType: requestOptions.responseType ?? baseOptions.responseType,

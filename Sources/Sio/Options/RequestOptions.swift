@@ -10,8 +10,8 @@ import Foundation
 public struct RequestOptions: OptionProtcol {
   public var baseURI: URL?
   public var path: String?
-  public var data: Data?
-  public var queryParameters: [String: Any]?
+  public var body: Data?
+  public var queryParameters: [String: String]?
   public var requestHeader: [RequestHeader]?
   public var responseType: ResponseType?
   public var cancelToken: CancelToken?
