@@ -172,3 +172,23 @@ final class SioPostUri: XCTestCase {
     }
   }
 }
+
+final class SioDownload: XCTestCase {
+  func testDownload() async throws {
+    var sio = Sio()
+    sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000")
+    if #available(iOS 15.0, *) {
+      let filePath = try await sio.download(path: "/api/get/download") { done, total in
+        let progress = (Double(done) / Double(total)) * 100
+        print("progress is \(String(describing: progress))%")
+      }
+      guard let filePath else {
+        print("File Path not found.")
+        return
+      }
+      print("File path is: \(filePath)")
+    } else {
+      print("Your device is lower than that of the minimum requirement iOS version (iOS 15.0)")
+    }
+  }
+}

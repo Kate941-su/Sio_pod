@@ -8,7 +8,6 @@
 import Foundation
 
 public struct MockedSio: SioRepository {
-
   func get(
     path: String, data: Any?,
     queryParameters: [String: Any]?,
@@ -58,23 +57,18 @@ public struct MockedSio: SioRepository {
 
   func download(
     path: String,
-    data: Any?,
-    queryParameters: [String: Any]?,
     cancelToken: CancelToken?,
     options: (any OptionProtcol)?,
-    onSendProgress: ProgressCallback?
-  ) async throws -> Data {
+    onReceiveProgress: ProgressCallback?
+  ) async throws -> URL? {
     fatalError()
   }
 
   func downloadUri(
     uri: URL,
-    data: Any?,
-    queryParameters: [String: Any]?,
     cancelToken: CancelToken?,
-    options: (any OptionProtcol)?,
-    onSendProgress: ProgressCallback?
-  ) async throws -> Data {
+    onReceiveProgress: ProgressCallback?
+  ) async throws -> URL? {
     fatalError()
   }
 

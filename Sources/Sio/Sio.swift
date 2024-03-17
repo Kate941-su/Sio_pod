@@ -12,7 +12,7 @@ public struct Sio: SioRepository {
     return URLSession(configuration: configration)
   }()
   public var baseOptions: BaseOptions
-  let downloadService = DownloadService()
+  private let downloadService = DownloadService()
 
   public init(options: BaseOptions? = nil) {
     self.baseOptions = options ?? BaseOptions()
@@ -102,9 +102,7 @@ public struct Sio: SioRepository {
       throw SioError.inValidUrl(path: URL(string: path))
     }
     
-    return try await download(uri: uri){ totalByteWritten, totalBytesExpectedToWrite in
-      print("Progress of downloading: \((Double(totalByteWritten) / Double(totalBytesExpectedToWrite)) * 100)%")
-    }
+    return try await download(uri: uri, onReceiveProgress: onReceiveProgress)
   }
   
   @available(iOS 15.0, *)
@@ -113,9 +111,7 @@ public struct Sio: SioRepository {
     cancelToken: CancelToken? = nil,
     onReceiveProgress: ProgressCallback? = nil
   ) async throws -> URL? {
-    return try await download(uri: uri) { totalByteWritten, totalBytesExpectedToWrite in
-      print("Progress of downloading: \((Double(totalByteWritten) / Double(totalBytesExpectedToWrite)) * 100)%")
-    }
+    return try await download(uri: uri, onReceiveProgress: onReceiveProgress)
   }
 
   // After v1?
