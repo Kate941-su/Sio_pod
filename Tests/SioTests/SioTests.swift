@@ -124,35 +124,26 @@ final class SioPost: XCTestCase {
     do {
       Util.debugPrint(title: "\(#function)"){}
       var defaultOptions = BaseOptions()
-      let requestBody = "{A:A}"
+      let requestBodyDict: [String: Any] = ["name" : "Kitaya", "age" : 26 ]
+      let requestJSON = try JSONSerialization.data(withJSONObject: requestBodyDict, options: .prettyPrinted)
+      guard let requestBody = String(data: requestJSON, encoding: .utf8) else {
+        print("Faild to parse json body")
+        return
+      }
       defaultOptions.body = requestBody.data(using: .utf8)
       var sio = Sio(options: defaultOptions)
       sio.baseOptions.requestHeader = [RequestHeader(headerField: "Content-Type", headerValue: "application/json")]
       sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
       let response = try await sio.post(path: "api/post/json")
-      let json = response.json ?? ["" : ""]
-      Util.debugPrint(title: "Response in detail") {
-        print(response.respnseHeader)
+      guard let json = response.json else {
+        print("\(#function) JSON doesn't existed")
+        return
       }
-      XCTAssertEqual(json.values.first as? String , "1")
+      print("json: \(String(describing: json))")
+      XCTAssertEqual(json.values.first as? Int , 26)
       } catch {
         let error = error as! SioError
         print(error.message)
       }
   }
-  
-  func testURLSessionPost() async throws {
-    let session: URLSession = {
-      let confiration = URLSessionConfiguration.default
-      return URLSession(configuration: confiration)
-    }()
-    
-    var request = URLRequest(url: URL(string: "http://127.0.0.1:8000/api/post/json")!)
-    request.httpMethod = "POST"
-    let response = try await session.data(for: request)
-    print(response)
-    
-  }
-  
-  
 }
