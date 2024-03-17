@@ -145,7 +145,7 @@ public struct Sio: SioRepository {
     let finalOptions = getFinalOptions(requestOptions: options)
 
     print("URI: \(uri)")
-    
+
     guard
       let request = try encodeRequest(uri: uri, options: finalOptions, requestMethod: requestMethod)
     else {

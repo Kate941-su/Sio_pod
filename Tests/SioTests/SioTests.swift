@@ -31,7 +31,7 @@ final class SioGet: XCTestCase {
       Util.debugPrint(title: "Response Json") {
         print("\(String(describing: dict))")
       }
-      XCTAssertEqual(dict.values.first as? String, "success_value")
+      XCTAssertEqual(dict["success_key"] as? String, "success_value")
     } catch {
       let error = error as! SioError
       print(error.message)
@@ -63,7 +63,7 @@ final class SioGet: XCTestCase {
       var sio = Sio()
       sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
       sio.baseOptions.mimeType = .json
-      sio.baseOptions.queryParameters = ["example": "1", "sample": "2"]
+      sio.baseOptions.queryParameters = ["test1": "1", "test2": "2"]
       // Get Text
       let response = try await sio.get(path: "api/get/json/query")
       guard let json = response.json else {
@@ -73,7 +73,8 @@ final class SioGet: XCTestCase {
       Util.debugPrint(title: "Response in detail") {
         print("\(String(describing: json))")
       }
-      XCTAssertEqual(json.values.first as? String, "1")
+      XCTAssertEqual(json["test1"] as? String, "1")
+      XCTAssertEqual(json["test2"] as? String, "2")
     } catch {
       let error = error as! SioError
       print(error.message)
@@ -134,7 +135,42 @@ final class SioPost: XCTestCase {
         return
       }
       print("json: \(String(describing: json))")
-      XCTAssertEqual(json.values.first as? Int, 26)
+      XCTAssertEqual(json["age"] as? Int, 26)
+      XCTAssertEqual(json["name"] as? String, "Kitaya")
+    } catch {
+      let error = error as! SioError
+      print(error.message)
+    }
+  }
+}
+
+final class SioPostUri: XCTestCase {
+  func testPostJson() async throws {
+    do {
+      Util.debugPrint(title: "\(#function)") {}
+      var defaultOptions = BaseOptions()
+      let requestBodyDict: [String: Any] = ["name": "Kitaya", "age": 26, "postUri": true]
+      let requestJSON = try JSONSerialization.data(
+        withJSONObject: requestBodyDict, options: .prettyPrinted)
+      guard let requestBody = String(data: requestJSON, encoding: .utf8) else {
+        print("Faild to parse json body")
+        return
+      }
+      defaultOptions.body = requestBody.data(using: .utf8)
+      var sio = Sio(options: defaultOptions)
+      sio.baseOptions.requestHeader = [
+        RequestHeader(headerField: "Content-Type", headerValue: "application/json")
+      ]
+      let response = try await sio.postUri(
+        uri: URL(string: "http://127.0.0.1:8000/api/post/uri/json")!)
+      guard let json = response.json else {
+        print("\(#function) JSON doesn't existed")
+        return
+      }
+      print("json: \(String(describing: json))")
+      XCTAssertEqual(json["age"] as? Int, 26)
+      XCTAssertEqual(json["name"] as? String, "Kitaya")
+      XCTAssertEqual(json["age"] as? Bool, true)
     } catch {
       let error = error as! SioError
       print(error.message)
