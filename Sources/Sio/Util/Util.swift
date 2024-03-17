@@ -9,10 +9,12 @@ import Foundation
 
 class Util {
   private init() {}
-  static func debugPrint(title: String, printContent: () -> Void) {
+  static func debugPrint(title: String, printContent: (() -> Void)? = nil) {
     print("\n")
     print("===== START \(title) =====")
-    printContent()
+    if let printContent {
+      printContent()
+    }
     print("===== END \(title) =====")
     print("\n")
   }

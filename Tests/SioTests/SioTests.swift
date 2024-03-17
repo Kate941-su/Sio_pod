@@ -9,7 +9,7 @@ import XCTest
 /// - 3. Query Parameters
 /// - 4. RequestHeader (Content-Header etc)
 /// - 5. RequestMethod (GET, POST, PUT)
-final class SioRealConnectionTest: XCTestCase {
+final class SioGet: XCTestCase {
   func testGetJson() async throws {
     var sio = Sio()
     Util.debugPrint(title: "\(#function)"){}
@@ -119,6 +119,40 @@ final class SioRealConnectionTest: XCTestCase {
 
 }
 
-final class SioMockTest: XCTestCase {
-
+final class SioPost: XCTestCase {
+  func testPostJson() async throws {
+    do {
+      Util.debugPrint(title: "\(#function)"){}
+      var defaultOptions = BaseOptions()
+      let requestBody = "{A:A}"
+      defaultOptions.body = requestBody.data(using: .utf8)
+      var sio = Sio(options: defaultOptions)
+      sio.baseOptions.requestHeader = [RequestHeader(headerField: "Content-Type", headerValue: "application/json")]
+      sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
+      let response = try await sio.post(path: "api/post/json")
+      let json = response.json ?? ["" : ""]
+      Util.debugPrint(title: "Response in detail") {
+        print(response.respnseHeader)
+      }
+      XCTAssertEqual(json.values.first as? String , "1")
+      } catch {
+        let error = error as! SioError
+        print(error.message)
+      }
+  }
+  
+  func testURLSessionPost() async throws {
+    let session: URLSession = {
+      let confiration = URLSessionConfiguration.default
+      return URLSession(configuration: confiration)
+    }()
+    
+    var request = URLRequest(url: URL(string: "http://127.0.0.1:8000/api/post/json")!)
+    request.httpMethod = "POST"
+    let response = try await session.data(for: request)
+    print(response)
+    
+  }
+  
+  
 }

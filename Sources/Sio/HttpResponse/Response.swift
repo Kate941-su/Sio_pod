@@ -11,12 +11,12 @@ public class Response {
   let data: Data
   let statusCode: StatusCode
   let mimeType: MimeType
-  let date: Date
+  let date: Date?
   let contentLength: Int
   let respnseHeader: URLResponse
 
   init(
-    data: Data, statusCode: StatusCode, mimeType: MimeType, date: Date, contentLength: Int,
+    data: Data, statusCode: StatusCode, mimeType: MimeType, date: Date? = nil, contentLength: Int,
     responseHeader: URLResponse
   ) {
     self.data = data

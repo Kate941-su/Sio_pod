@@ -7,6 +7,10 @@
 
 import Foundation
 
+/// For example
+/// headerField: "application/json"
+/// headerValue: "Content-Type"
+
 public struct RequestHeader {
   let headerField: String
   let headerValue: String

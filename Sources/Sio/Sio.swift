@@ -33,9 +33,11 @@ public struct Sio: SioRepository {
     onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
     let baseUri: URL? = options?.baseURI ?? baseOptions.baseURI
+    
     guard let uri = connectUri(baseUri: baseUri, path: path) else {
       throw SioError.inValidUrl(path: URL(string: path)!)
     }
+    
     return try await request(
       uri: uri,
       options: options ?? baseOptions,
@@ -64,10 +66,13 @@ public struct Sio: SioRepository {
     onSendProgress: ProgressCallback? = nil,
     onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
+    
     let baseUri: URL? = options?.baseURI ?? baseOptions.baseURI
+    
     guard let uri = connectUri(baseUri: baseUri, path: path) else {
       throw SioError.inValidUrl(path: URL(string: path))
     }
+    
     return try await request(
       uri: uri,
       options: options ?? baseOptions,
@@ -173,7 +178,7 @@ public struct Sio: SioRepository {
     }
 
     /// Handling Request Method
-    if let requestMethod = requestMethod {
+    if let requestMethod {
       switch requestMethod {
       case .GET:
         request.httpMethod = RequestMethod.GET.rawValue
@@ -186,6 +191,7 @@ public struct Sio: SioRepository {
       request.httpMethod = RequestMethod.GET.rawValue
     }
 
+
     /// Handling Request Body
     if let requestBody = options.body {
       request.httpBody = requestBody
@@ -193,9 +199,7 @@ public struct Sio: SioRepository {
 
     /// Handling Request HTTP Header
     if let requestHeaders = options.requestHeader {
-      for requestHeader in requestHeaders {
-        request.setValue(requestHeader.headerValue, forHTTPHeaderField: requestHeader.headerField)
-      }
+      requestHeaders.forEach { request.setValue($0.headerValue, forHTTPHeaderField: $0.headerField) }
     }
 
     /// Handling Request Query Parameters
@@ -208,6 +212,7 @@ public struct Sio: SioRepository {
       urlComponetns.queryItems = res
       request.url = urlComponetns.url
     }
+    
     return request
   }
 
@@ -231,25 +236,13 @@ public struct Sio: SioRepository {
       throw SioError.unknownStatusCode(statusCode: httpURLResponse.statusCode)
     }
 
-    // TODO: Connect stringDate and date
-    guard let stringDate = httpURLResponse.allHeaderFields["Date"] as? String else {
-      print("HTTP Header Parse Error")
-      throw SioError.stringDateFormatError()
-    }
-
-    Util.debugPrint(title: "String Date") {
-      print("\(stringDate)")
-    }
-
-    // TODO: Creating Singleton
-    let dummyDate = "Tue, 12 Mar 2024 14:32:42 GMT"
-    let dateFormatter = DateFormatter()
-    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-    dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
-    dateFormatter.dateFormat = String.DateFormatType.httpHeader.stringFormat
-    guard let date = dateFormatter.date(from: stringDate) else {
-      print("Could not date parse.")
-      throw SioError.stringDateFormatError()
+    // Date Format
+    var date: Date?
+    if let stringDate = httpURLResponse.allHeaderFields["Date"] as? String {
+      Util.debugPrint(title: "String Date") {
+        print("\(stringDate)")
+        date = DateFormatterWrapper.dateFormatter.date(from: stringDate)
+      }
     }
 
     return Response(
