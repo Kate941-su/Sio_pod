@@ -5,6 +5,7 @@ import Foundation
 
 @available(iOS 13.0, macOS 12.0, *)
 public struct Sio: SioRepository {
+
   let session: URLSession = {
     /// If you create not to cache on your device
     /// You have to implement configration type would be .ephemeral.
@@ -88,29 +89,28 @@ public struct Sio: SioRepository {
       requestMethod: .POST)
   }
 
-
   @available(iOS 15.0, *)
   public func download(
     path: String,
     cancelToken: CancelToken? = nil,
     options: OptionProtcol? = nil,
     onReceiveProgress: ProgressCallback? = nil
-  ) async throws -> URL? {
+  ) async throws -> (URL?, URLResponse?) {
     let baseUri: URL? = options?.baseURI ?? baseOptions.baseURI
 
     guard let uri = connectUri(baseUri: baseUri, path: path) else {
       throw SioError.inValidUrl(path: URL(string: path))
     }
-    
+
     return try await download(uri: uri, onReceiveProgress: onReceiveProgress)
   }
-  
+
   @available(iOS 15.0, *)
   public func downloadUri(
     uri: URL,
     cancelToken: CancelToken? = nil,
     onReceiveProgress: ProgressCallback? = nil
-  ) async throws -> URL? {
+  ) async throws -> (URL?, URLResponse?) {
     return try await download(uri: uri, onReceiveProgress: onReceiveProgress)
   }
 
@@ -137,7 +137,6 @@ public struct Sio: SioRepository {
     }
   }
 
-  
   func request(
     uri: URL,
     options: OptionProtcol,
@@ -160,21 +159,19 @@ public struct Sio: SioRepository {
     let sioResponse = try decodeResponse(options: finalOptions, data: data, response: response)
     return sioResponse
   }
-  
+
   @available(iOS 15.0, *)
   func download(
     uri: URL,
-    onReceiveProgress: ProgressCallback?) async throws -> URL? {
-      
-      var downloadedData = Data()
-      if let onReceiveProgress {
-        downloadService.onReceiveProgress = onReceiveProgress
-      }
-      let (url, responseHeader) = try await session.download(for: URLRequest(url: uri), delegate: downloadService)
-      
-      return url
-      
+    onReceiveProgress: ProgressCallback?
+  ) async throws -> (URL?, URLResponse) {
+
+    if let onReceiveProgress {
+      downloadService.onReceiveProgress = onReceiveProgress
     }
+    return try await session.download(for: URLRequest(url: uri), delegate: downloadService)
+
+  }
 
   func encodeRequest(uri: URL, options: OptionProtcol, requestMethod: RequestMethod?) throws
     -> URLRequest?
@@ -282,4 +279,3 @@ public struct Sio: SioRepository {
     )
   }
 }
-

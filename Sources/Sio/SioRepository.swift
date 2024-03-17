@@ -47,7 +47,7 @@ protocol SioRepository {
     onSendProgress: ProgressCallback?,
     onReceiveProgress: ProgressCallback?
   ) async throws -> Response
-  
+
   // TODO: Being able to lower ios 15.0
   @available(iOS 15.0, *)
   func download(
@@ -55,7 +55,7 @@ protocol SioRepository {
     cancelToken: CancelToken?,
     options: OptionProtcol?,
     onReceiveProgress: ProgressCallback?
-  ) async throws -> URL?
+  ) async throws -> (URL?, URLResponse?)
 
   // TODO: Being able to lower ios 15.0
   @available(iOS 15.0, *)
@@ -63,7 +63,7 @@ protocol SioRepository {
     uri: URL,
     cancelToken: CancelToken?,
     onReceiveProgress: ProgressCallback?
-  ) async throws -> URL?
+  ) async throws -> (URL?, URLResponse?)
 
   // After v1?
   func upload(

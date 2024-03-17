@@ -80,9 +80,6 @@ final class SioGet: XCTestCase {
       print(error.message)
     }
   }
-  //  func testDownload() async throws {
-  //
-  //  }
   //
   //  func testPut() async throws {
   //
@@ -178,10 +175,12 @@ final class SioDownload: XCTestCase {
     var sio = Sio()
     sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000")
     if #available(iOS 15.0, *) {
-      let filePath = try await sio.download(path: "/api/get/download") { done, total in
+      let (filePath, response) = try await sio.download(path: "/api/get/download/video") {
+        done, total in
         let progress = (Double(done) / Double(total)) * 100
         print("progress is \(String(describing: progress))%")
       }
+
       guard let filePath else {
         print("File Path not found.")
         return
