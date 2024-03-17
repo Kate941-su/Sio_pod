@@ -80,11 +80,6 @@ final class SioGet: XCTestCase {
       print(error.message)
     }
   }
-  //
-  //  func testPostUri() async throws {
-  //
-  //  }
-  //
   //  func testDownload() async throws {
   //
   //  }
@@ -170,7 +165,7 @@ final class SioPostUri: XCTestCase {
       print("json: \(String(describing: json))")
       XCTAssertEqual(json["age"] as? Int, 26)
       XCTAssertEqual(json["name"] as? String, "Kitaya")
-      XCTAssertEqual(json["age"] as? Bool, true)
+      XCTAssertEqual(json["postUri"] as? Bool, true)
     } catch {
       let error = error as! SioError
       print(error.message)

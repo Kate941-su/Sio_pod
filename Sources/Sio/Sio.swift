@@ -5,7 +5,6 @@ import Foundation
 
 @available(iOS 13.0, macOS 12.0, *)
 public struct Sio: SioRepository {
-
   let session: URLSession = {
     /// If you create not to cache on your device
     /// You have to implement configration type would be .ephemeral.
@@ -13,6 +12,7 @@ public struct Sio: SioRepository {
     return URLSession(configuration: configration)
   }()
   public var baseOptions: BaseOptions
+  let downloadService = DownloadService()
 
   public init(options: BaseOptions? = nil) {
     self.baseOptions = options ?? BaseOptions()
@@ -88,28 +88,34 @@ public struct Sio: SioRepository {
       requestMethod: .POST)
   }
 
+
+  @available(iOS 15.0, *)
   public func download(
     path: String,
-    data: Any? = nil,
-    queryParameters: [String: Any]? = nil,
     cancelToken: CancelToken? = nil,
     options: OptionProtcol? = nil,
-    onSendProgress: ProgressCallback? = nil
-  ) async throws -> Response {
-    // TODO: implement
-    fatalError()
-  }
+    onReceiveProgress: ProgressCallback? = nil
+  ) async throws -> URL? {
+    let baseUri: URL? = options?.baseURI ?? baseOptions.baseURI
 
+    guard let uri = connectUri(baseUri: baseUri, path: path) else {
+      throw SioError.inValidUrl(path: URL(string: path))
+    }
+    
+    return try await download(uri: uri){ totalByteWritten, totalBytesExpectedToWrite in
+      print("Progress of downloading: \((Double(totalByteWritten) / Double(totalBytesExpectedToWrite)) * 100)%")
+    }
+  }
+  
+  @available(iOS 15.0, *)
   public func downloadUri(
     uri: URL,
-    data: Any? = nil,
-    queryParameters: [String: Any]? = nil,
     cancelToken: CancelToken? = nil,
-    options: OptionProtcol? = nil,
-    onSendProgress: ProgressCallback? = nil
-  ) async throws -> Response {
-    // TODO: implement
-    fatalError()
+    onReceiveProgress: ProgressCallback? = nil
+  ) async throws -> URL? {
+    return try await download(uri: uri) { totalByteWritten, totalBytesExpectedToWrite in
+      print("Progress of downloading: \((Double(totalByteWritten) / Double(totalBytesExpectedToWrite)) * 100)%")
+    }
   }
 
   // After v1?
@@ -124,7 +130,7 @@ public struct Sio: SioRepository {
     fatalError()
   }
 
-  func connectUri(baseUri: URL?, path: String) -> URL? {
+  private func connectUri(baseUri: URL?, path: String) -> URL? {
     guard let baseUri else {
       return URL(string: path)
     }
@@ -135,6 +141,7 @@ public struct Sio: SioRepository {
     }
   }
 
+  
   func request(
     uri: URL,
     options: OptionProtcol,
@@ -157,12 +164,27 @@ public struct Sio: SioRepository {
     let sioResponse = try decodeResponse(options: finalOptions, data: data, response: response)
     return sioResponse
   }
+  
+  @available(iOS 15.0, *)
+  func download(
+    uri: URL,
+    onReceiveProgress: ProgressCallback?) async throws -> URL? {
+      
+      var downloadedData = Data()
+      if let onReceiveProgress {
+        downloadService.onReceiveProgress = onReceiveProgress
+      }
+      let (url, responseHeader) = try await session.download(for: URLRequest(url: uri), delegate: downloadService)
+      
+      return url
+      
+    }
 
   func encodeRequest(uri: URL, options: OptionProtcol, requestMethod: RequestMethod?) throws
     -> URLRequest?
   {
 
-    /// The simplest usage
+    /// A Base URL Request Object.
     var request = URLRequest(url: uri)
 
     if let timeout = options.timeout {
@@ -264,3 +286,4 @@ public struct Sio: SioRepository {
     )
   }
 }
+

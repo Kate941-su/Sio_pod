@@ -63,7 +63,7 @@ public struct MockedSio: SioRepository {
     cancelToken: CancelToken?,
     options: (any OptionProtcol)?,
     onSendProgress: ProgressCallback?
-  ) async throws -> Response {
+  ) async throws -> Data {
     fatalError()
   }
 
@@ -74,7 +74,7 @@ public struct MockedSio: SioRepository {
     cancelToken: CancelToken?,
     options: (any OptionProtcol)?,
     onSendProgress: ProgressCallback?
-  ) async throws -> Response {
+  ) async throws -> Data {
     fatalError()
   }
 

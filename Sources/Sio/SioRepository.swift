@@ -47,24 +47,23 @@ protocol SioRepository {
     onSendProgress: ProgressCallback?,
     onReceiveProgress: ProgressCallback?
   ) async throws -> Response
-
+  
+  // TODO: Being able to lower ios 15.0
+  @available(iOS 15.0, *)
   func download(
     path: String,
-    data: Any?,
-    queryParameters: [String: Any]?,
     cancelToken: CancelToken?,
     options: OptionProtcol?,
-    onSendProgress: ProgressCallback?
-  ) async throws -> Response
+    onReceiveProgress: ProgressCallback?
+  ) async throws -> URL?
 
+  // TODO: Being able to lower ios 15.0
+  @available(iOS 15.0, *)
   func downloadUri(
     uri: URL,
-    data: Any?,
-    queryParameters: [String: Any]?,
     cancelToken: CancelToken?,
-    options: OptionProtcol?,
-    onSendProgress: ProgressCallback?
-  ) async throws -> Response
+    onReceiveProgress: ProgressCallback?
+  ) async throws -> URL?
 
   // After v1?
   func upload(
