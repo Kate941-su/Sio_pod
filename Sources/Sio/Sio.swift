@@ -152,9 +152,15 @@ public struct Sio: SioRepository {
     else {
       throw SioError.inValidUrl(path: uri)
     }
-
-    let (data, response) = try await session.data(for: request)
-
+    var data: Data
+    var response: URLResponse
+    if #available(iOS 15.0, *) {
+      urlSessionTaskService.onSendProgress = onSendProgress
+      urlSessionTaskService.onReceiveProgress = onReceiveProgress
+      (data, response) = try await session.data(for: request, delegate: urlSessionTaskService)
+    } else {
+      (data, response) = try await session.data(for: request)
+    }
     let sioResponse = try decodeResponse(options: finalOptions, data: data, response: response)
     return sioResponse
   }
@@ -223,11 +229,7 @@ public struct Sio: SioRepository {
   func decodeResponse(options: OptionProtcol, data: Data, response: URLResponse) throws -> Response
   {
     let contentLength = response.expectedContentLength
-    guard let mimeTypeString = response.mimeType,
-      let mimeType = MimeType.normilizeMimeType(mimeTypeString: mimeTypeString)
-    else {
-      throw SioError.unknownMimeType(mimeTypeString: response.mimeType ?? "Unknown")
-    }
+    let mimeType = response.mimeType ?? ""
 
     guard let httpURLResponse: HTTPURLResponse = response as? HTTPURLResponse else {
       throw SioError.decodeError()

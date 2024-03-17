@@ -43,7 +43,7 @@ final class SioGet: XCTestCase {
     do {
       var sio = Sio()
       sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
-      sio.baseOptions.mimeType = .plain_text
+      sio.baseOptions.mimeType = "text/plain"
       // Get Text
       let response = try await sio.get(path: "api/get/text")
       let text = response.text
@@ -62,7 +62,7 @@ final class SioGet: XCTestCase {
     do {
       var sio = Sio()
       sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
-      sio.baseOptions.mimeType = .json
+      sio.baseOptions.mimeType = "application/json"
       sio.baseOptions.queryParameters = ["test1": "1", "test2": "2"]
       // Get Text
       let response = try await sio.get(path: "api/get/json/query")
@@ -80,7 +80,7 @@ final class SioGet: XCTestCase {
       print(error.message)
     }
   }
-  //
+  // After v1 implement
   //  func testPut() async throws {
   //
   //  }
@@ -88,7 +88,6 @@ final class SioGet: XCTestCase {
   //  func testPutUri() async throws {
   //
   //  }
-
 }
 
 final class SioGetUri: XCTestCase {
@@ -170,22 +169,27 @@ final class SioPostUri: XCTestCase {
   }
 }
 
+final class SioGetWithProgress: XCTestCase {
+  func testGetWithProgress() async throws {
+    let sio = Sio()
+    if #available(iOS 15.0, *) {
+      let response = try await sio.getUri(uri: URL(string: "http://127.0.0.1:8000/api/get/download/video")!, onReceiveProgress: { done, total in print("progress is \((Double(done) / Double(total))*100)%") })
+    }
+  }
+}
+
 final class SioDownload: XCTestCase {
   func testDownload() async throws {
     var sio = Sio()
     sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000")
     if #available(iOS 15.0, *) {
-      let (filePath, _) = try await sio.download(path: "/api/get/download/video") {
-        done, total in
-        let progress = (Double(done) / Double(total)) * 100
-        print("progress is \(String(describing: progress))%")
-      }
-
+      let (filePath, response) = try await sio.download(path: "/api/get/download/video")
       guard let filePath else {
         print("File Path not found.")
         return
       }
       print("File path is: \(filePath)")
+      print("response is: \(String(describing: response))")
     } else {
       print("Your device is lower than that of the minimum requirement iOS version (iOS 15.0)")
     }

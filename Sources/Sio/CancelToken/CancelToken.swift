@@ -8,5 +8,5 @@
 import Foundation
 
 public struct CancelToken {
-
+  // TODO: Implement after v1
 }

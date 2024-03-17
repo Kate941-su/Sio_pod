@@ -22,6 +22,7 @@ class URLSessionTaskService: NSObject, URLSessionTaskDelegate {
   }
   
   func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
+    print("ON SEND DATA")
     if let onSendProgress {
         onSendProgress(Int(totalBytesSent), Int(totalBytesExpectedToSend))
     }
@@ -38,6 +39,7 @@ class URLSessionTaskService: NSObject, URLSessionTaskDelegate {
     _ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64,
     totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64
   ) {
+    print("ON RECEIVE DATA")
     if let onReceiveProgress {
       onReceiveProgress(Int(totalBytesWritten), Int(totalBytesExpectedToWrite))
     }

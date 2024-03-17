@@ -15,6 +15,6 @@ public struct RequestOptions: OptionProtcol {
   public var requestHeader: [RequestHeader]?
   public var responseType: ResponseType?
   public var cancelToken: CancelToken?
-  public var mimeType: MimeType?
+  public var mimeType: String?
   public var timeout: Double?
 }

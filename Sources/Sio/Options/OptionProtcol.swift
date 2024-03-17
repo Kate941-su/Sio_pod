@@ -15,6 +15,6 @@ public protocol OptionProtcol {
   var requestHeader: [RequestHeader]? { get set }
   var responseType: ResponseType? { get set }
   var cancelToken: CancelToken? { get set }
-  var mimeType: MimeType? { get set }
+  var mimeType: String? { get set }
   var timeout: Double? { get set }
 }
