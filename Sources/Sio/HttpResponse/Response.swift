@@ -45,7 +45,6 @@ public class Response {
     return nil
   }
 
-  
   public var text: String? {
     if let stringDataUtf8 = String(data: data, encoding: .utf8) {
       return stringDataUtf8

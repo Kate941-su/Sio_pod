@@ -12,7 +12,7 @@ import XCTest
 final class SioGet: XCTestCase {
   func testGetJson() async throws {
     var sio = Sio()
-    Util.debugPrint(title: "\(#function)"){}
+    Util.debugPrint(title: "\(#function)")
     sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
     do {
       // Get Json
@@ -22,7 +22,11 @@ final class SioGet: XCTestCase {
         print("StatusCode: \(response.statusCode)")
         print("MimeType: \(response.mimeType)")
       }
-      let dict = response.json ?? ["":""]
+
+      guard let dict = response.json else {
+        XCTAssert(false)
+        return
+      }
 
       Util.debugPrint(title: "Response Json") {
         print("\(String(describing: dict))")
@@ -33,9 +37,9 @@ final class SioGet: XCTestCase {
       print(error.message)
     }
   }
-  
+
   func testGetText() async throws {
-    Util.debugPrint(title: "\(#function)"){}
+    Util.debugPrint(title: "\(#function)") {}
     do {
       var sio = Sio()
       sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
@@ -54,52 +58,27 @@ final class SioGet: XCTestCase {
   }
 
   func testGetJsonWithQuery() async throws {
-    Util.debugPrint(title: "\(#function)"){}
+    Util.debugPrint(title: "\(#function)") {}
     do {
       var sio = Sio()
       sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
       sio.baseOptions.mimeType = .json
-      sio.baseOptions.queryParameters = ["example" : "1", "sample" : "2"]
+      sio.baseOptions.queryParameters = ["example": "1", "sample": "2"]
       // Get Text
       let response = try await sio.get(path: "api/get/json/query")
-      let json = response.json ?? ["":""]
+      guard let json = response.json else {
+        XCTAssert(false, "Could not parse json")
+        return
+      }
       Util.debugPrint(title: "Response in detail") {
         print("\(String(describing: json))")
       }
-      XCTAssertEqual(json.values.first as? String , "1")
+      XCTAssertEqual(json.values.first as? String, "1")
     } catch {
       let error = error as! SioError
       print(error.message)
     }
   }
-  
-//  func testGetBaseUrlWithQueryParams() async throws {
-//    var sio = Sio()
-//    sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
-//    do {
-//      let response = try await sio.get(path: "api/healthChecker")
-//      Util.debugPrint(title: "Response in detail") {
-//        print("Data: \(response.data)")
-//        print("StatusCode: \(response.statusCode)")
-//        print("MimeType: \(response.mimeType)")
-//        print("Response Header: \(response.respnseHeader)")
-//      }
-//      let dict = response.json ?? ["":""]
-//      print("\(String(describing: dict))")
-//      XCTAssertEqual(dict.values.first as? String, "success_value")
-//    } catch {
-//      let error = error as! SioError
-//      print(error.message)
-//    }
-//  }
-  
-  //  func testGetUri() async throws {
-  //
-  //  }
-  //
-  //  func testPost() async throws {
-  //
-  //  }
   //
   //  func testPostUri() async throws {
   //
@@ -119,20 +98,35 @@ final class SioGet: XCTestCase {
 
 }
 
+final class SioGetUri: XCTestCase {
+  func testGetUri() async throws {
+    let sio = Sio()
+    let response = try await sio.getUri(uri: URL(string: "http://127.0.0.1:8000/api/get/json")!)
+    guard let json = response.json else {
+      XCTAssert(false, "Could not parse json")
+      return
+    }
+    XCTAssertEqual(json.values.first as? String, "success_value")
+  }
+}
+
 final class SioPost: XCTestCase {
   func testPostJson() async throws {
     do {
-      Util.debugPrint(title: "\(#function)"){}
+      Util.debugPrint(title: "\(#function)") {}
       var defaultOptions = BaseOptions()
-      let requestBodyDict: [String: Any] = ["name" : "Kitaya", "age" : 26 ]
-      let requestJSON = try JSONSerialization.data(withJSONObject: requestBodyDict, options: .prettyPrinted)
+      let requestBodyDict: [String: Any] = ["name": "Kitaya", "age": 26]
+      let requestJSON = try JSONSerialization.data(
+        withJSONObject: requestBodyDict, options: .prettyPrinted)
       guard let requestBody = String(data: requestJSON, encoding: .utf8) else {
         print("Faild to parse json body")
         return
       }
       defaultOptions.body = requestBody.data(using: .utf8)
       var sio = Sio(options: defaultOptions)
-      sio.baseOptions.requestHeader = [RequestHeader(headerField: "Content-Type", headerValue: "application/json")]
+      sio.baseOptions.requestHeader = [
+        RequestHeader(headerField: "Content-Type", headerValue: "application/json")
+      ]
       sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
       let response = try await sio.post(path: "api/post/json")
       guard let json = response.json else {
@@ -140,10 +134,10 @@ final class SioPost: XCTestCase {
         return
       }
       print("json: \(String(describing: json))")
-      XCTAssertEqual(json.values.first as? Int , 26)
-      } catch {
-        let error = error as! SioError
-        print(error.message)
-      }
+      XCTAssertEqual(json.values.first as? Int, 26)
+    } catch {
+      let error = error as! SioError
+      print(error.message)
+    }
   }
 }

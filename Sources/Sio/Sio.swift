@@ -3,10 +3,6 @@
 
 import Foundation
 
-let mocked_get_json_url = "http://127.0.0.1:8000/api/healthChecker"
-
-let mocked_get_404_url = "http://127.0.0.1:8000/api/healthCheckers"
-
 @available(iOS 13.0, macOS 12.0, *)
 public struct Sio: SioRepository {
 
@@ -16,7 +12,6 @@ public struct Sio: SioRepository {
     let configration = URLSessionConfiguration.default
     return URLSession(configuration: configration)
   }()
-
   public var baseOptions: BaseOptions
 
   public init(options: BaseOptions? = nil) {
@@ -33,11 +28,11 @@ public struct Sio: SioRepository {
     onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
     let baseUri: URL? = options?.baseURI ?? baseOptions.baseURI
-    
+
     guard let uri = connectUri(baseUri: baseUri, path: path) else {
       throw SioError.inValidUrl(path: URL(string: path)!)
     }
-    
+
     return try await request(
       uri: uri,
       options: options ?? baseOptions,
@@ -53,8 +48,7 @@ public struct Sio: SioRepository {
     onSendProgress: ProgressCallback? = nil,
     onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
-    // TODO: implement
-    fatalError()
+    return try await request(uri: uri, options: options ?? baseOptions, requestMethod: .GET)
   }
 
   public func post(
@@ -66,13 +60,13 @@ public struct Sio: SioRepository {
     onSendProgress: ProgressCallback? = nil,
     onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
-    
+
     let baseUri: URL? = options?.baseURI ?? baseOptions.baseURI
-    
+
     guard let uri = connectUri(baseUri: baseUri, path: path) else {
       throw SioError.inValidUrl(path: URL(string: path))
     }
-    
+
     return try await request(
       uri: uri,
       options: options ?? baseOptions,
@@ -88,8 +82,10 @@ public struct Sio: SioRepository {
     onSendProgress: ProgressCallback? = nil,
     onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
-    // TODO: implement
-    fatalError()
+    return try await request(
+      uri: uri,
+      options: options ?? baseOptions,
+      requestMethod: .POST)
   }
 
   public func download(
@@ -148,17 +144,16 @@ public struct Sio: SioRepository {
   ) async throws -> Response {
     let finalOptions = getFinalOptions(requestOptions: options)
 
-    print("You are trying to connect to the URL: \(uri)\n")
+    print("URI: \(uri)")
+    
     guard
       let request = try encodeRequest(uri: uri, options: finalOptions, requestMethod: requestMethod)
     else {
       throw SioError.inValidUrl(path: uri)
     }
 
-    print("You get a response by URL Session.\n")
     let (data, response) = try await session.data(for: request)
 
-    print("Decode for SioResponse\n")
     let sioResponse = try decodeResponse(options: finalOptions, data: data, response: response)
     return sioResponse
   }
@@ -166,9 +161,6 @@ public struct Sio: SioRepository {
   func encodeRequest(uri: URL, options: OptionProtcol, requestMethod: RequestMethod?) throws
     -> URLRequest?
   {
-    guard (options.baseURI) != nil else {
-      return nil
-    }
 
     /// The simplest usage
     var request = URLRequest(url: uri)
@@ -191,7 +183,6 @@ public struct Sio: SioRepository {
       request.httpMethod = RequestMethod.GET.rawValue
     }
 
-
     /// Handling Request Body
     if let requestBody = options.body {
       request.httpBody = requestBody
@@ -199,7 +190,9 @@ public struct Sio: SioRepository {
 
     /// Handling Request HTTP Header
     if let requestHeaders = options.requestHeader {
-      requestHeaders.forEach { request.setValue($0.headerValue, forHTTPHeaderField: $0.headerField) }
+      requestHeaders.forEach {
+        request.setValue($0.headerValue, forHTTPHeaderField: $0.headerField)
+      }
     }
 
     /// Handling Request Query Parameters
@@ -212,7 +205,7 @@ public struct Sio: SioRepository {
       urlComponetns.queryItems = res
       request.url = urlComponetns.url
     }
-    
+
     return request
   }
 
@@ -239,10 +232,7 @@ public struct Sio: SioRepository {
     // Date Format
     var date: Date?
     if let stringDate = httpURLResponse.allHeaderFields["Date"] as? String {
-      Util.debugPrint(title: "String Date") {
-        print("\(stringDate)")
-        date = DateFormatterWrapper.dateFormatter.date(from: stringDate)
-      }
+      date = DateFormatterWrapper.dateFormatter.date(from: stringDate)
     }
 
     return Response(
