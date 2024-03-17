@@ -53,16 +53,14 @@ protocol SioRepository {
   func download(
     path: String,
     cancelToken: CancelToken?,
-    options: OptionProtcol?,
-    onReceiveProgress: ProgressCallback?
+    options: OptionProtcol?
   ) async throws -> (URL?, URLResponse?)
 
   // TODO: Being able to lower ios 15.0
   @available(iOS 15.0, *)
   func downloadUri(
     uri: URL,
-    cancelToken: CancelToken?,
-    onReceiveProgress: ProgressCallback?
+    cancelToken: CancelToken?
   ) async throws -> (URL?, URLResponse?)
 
   // After v1?

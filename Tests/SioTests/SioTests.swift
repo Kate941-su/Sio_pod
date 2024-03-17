@@ -175,7 +175,7 @@ final class SioDownload: XCTestCase {
     var sio = Sio()
     sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000")
     if #available(iOS 15.0, *) {
-      let (filePath, response) = try await sio.download(path: "/api/get/download/video") {
+      let (filePath, _) = try await sio.download(path: "/api/get/download/video") {
         done, total in
         let progress = (Double(done) / Double(total)) * 100
         print("progress is \(String(describing: progress))%")

@@ -13,10 +13,11 @@ public struct Sio: SioRepository {
     return URLSession(configuration: configration)
   }()
   public var baseOptions: BaseOptions
-  private let downloadService = DownloadService()
+  private let urlSessionTaskService: URLSessionTaskService
 
   public init(options: BaseOptions? = nil) {
     self.baseOptions = options ?? BaseOptions()
+    urlSessionTaskService = URLSessionTaskService(session: session)
   }
 
   public func get(
@@ -93,8 +94,7 @@ public struct Sio: SioRepository {
   public func download(
     path: String,
     cancelToken: CancelToken? = nil,
-    options: OptionProtcol? = nil,
-    onReceiveProgress: ProgressCallback? = nil
+    options: OptionProtcol? = nil
   ) async throws -> (URL?, URLResponse?) {
     let baseUri: URL? = options?.baseURI ?? baseOptions.baseURI
 
@@ -102,16 +102,15 @@ public struct Sio: SioRepository {
       throw SioError.inValidUrl(path: URL(string: path))
     }
 
-    return try await download(uri: uri, onReceiveProgress: onReceiveProgress)
+    return try await download(uri: uri)
   }
 
   @available(iOS 15.0, *)
   public func downloadUri(
     uri: URL,
-    cancelToken: CancelToken? = nil,
-    onReceiveProgress: ProgressCallback? = nil
+    cancelToken: CancelToken? = nil
   ) async throws -> (URL?, URLResponse?) {
-    return try await download(uri: uri, onReceiveProgress: onReceiveProgress)
+    return try await download(uri: uri)
   }
 
   // After v1?
@@ -160,17 +159,14 @@ public struct Sio: SioRepository {
     return sioResponse
   }
 
+  // download method is very clear and its simpleness makes me confortable, but delegate doesn't work
+  // so I have to use `bytes` instead ....
+  // https://forums.developer.apple.com/forums/thread/738541
   @available(iOS 15.0, *)
   func download(
-    uri: URL,
-    onReceiveProgress: ProgressCallback?
-  ) async throws -> (URL?, URLResponse) {
-
-    if let onReceiveProgress {
-      downloadService.onReceiveProgress = onReceiveProgress
-    }
-    return try await session.download(for: URLRequest(url: uri), delegate: downloadService)
-
+    uri: URL
+  ) async throws -> (URL?, URLResponse?) {
+    return try await session.download(for: URLRequest(url: uri))
   }
 
   func encodeRequest(uri: URL, options: OptionProtcol, requestMethod: RequestMethod?) throws

@@ -7,9 +7,25 @@
 
 import Foundation
 
-class DownloadService: NSObject, URLSessionDownloadDelegate {
-
+class URLSessionTaskService: NSObject, URLSessionTaskDelegate {
+  
   var onReceiveProgress: ProgressCallback? = nil
+  var onSendProgress: ProgressCallback? = nil
+  var session: URLSession
+  
+  init(session: URLSession) {
+    self.session = session
+  }
+  
+  deinit {
+    print("Download Service Deinit")
+  }
+  
+  func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
+    if let onSendProgress {
+        onSendProgress(Int(totalBytesSent), Int(totalBytesExpectedToSend))
+    }
+  }
 
   func urlSession(
     _ session: URLSession, downloadTask: URLSessionDownloadTask,
@@ -23,7 +39,6 @@ class DownloadService: NSObject, URLSessionDownloadDelegate {
     totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64
   ) {
     if let onReceiveProgress {
-      print("[URLSession::didWriteData]")
       onReceiveProgress(Int(totalBytesWritten), Int(totalBytesExpectedToWrite))
     }
   }
