@@ -14,28 +14,28 @@ final class SioGet: XCTestCase {
     var sio = Sio()
     Util.debugPrint(title: "\(#function)")
     sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
-    do {
-      // Get Json
-      let response = try await sio.get(path: "api/get/json")
-      Util.debugPrint(title: "Response in detail") {
-        print("Data Size: \(response.data)")
-        print("StatusCode: \(response.statusCode)")
-        print("MimeType: \(response.mimeType)")
-      }
-
-      guard let dict = response.json else {
-        XCTAssert(false)
-        return
-      }
-
-      Util.debugPrint(title: "Response Json") {
-        print("\(String(describing: dict))")
-      }
-      XCTAssertEqual(dict["success_key"] as? String, "success_value")
-    } catch {
-      let error = error as! SioError
-      print(error.message)
+    //    do {
+    // Get Json
+    let response = try await sio.get(path: "api/get/json")
+    Util.debugPrint(title: "Response in detail") {
+      print("Data Size: \(response.data)")
+      print("StatusCode: \(response.statusCode)")
+      print("MimeType: \(response.mimeType)")
     }
+
+    guard let dict = response.json else {
+      XCTAssert(false)
+      return
+    }
+
+    Util.debugPrint(title: "Response Json") {
+      print("\(String(describing: dict))")
+    }
+    XCTAssertEqual(dict["success_key"] as? String, "success_value")
+    //    } catch {
+    //      let error = error as! SioError
+    //      print(error.message)
+    //    }
   }
 
   func testGetText() async throws {
@@ -80,14 +80,6 @@ final class SioGet: XCTestCase {
       print(error.message)
     }
   }
-  // After v1 implement
-  //  func testPut() async throws {
-  //
-  //  }
-  //
-  //  func testPutUri() async throws {
-  //
-  //  }
 }
 
 final class SioGetUri: XCTestCase {
@@ -173,7 +165,11 @@ final class SioGetWithProgress: XCTestCase {
   func testGetWithProgress() async throws {
     let sio = Sio()
     if #available(iOS 15.0, *) {
-      let response = try await sio.getUri(uri: URL(string: "http://127.0.0.1:8000/api/get/download/video")!, onReceiveProgress: { done, total in print("progress is \((Double(done) / Double(total))*100)%") })
+      let response = try await sio.getUri(
+        uri: URL(string: "http://127.0.0.1:8000/api/get/download/video")!,
+        onReceiveProgress: { done, total in
+          print("progress is \((Double(done) / Double(total))*100)%")
+        })
     }
   }
 }

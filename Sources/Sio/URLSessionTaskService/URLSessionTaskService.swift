@@ -8,23 +8,22 @@
 import Foundation
 
 class URLSessionTaskService: NSObject, URLSessionTaskDelegate {
-  
+
   var onReceiveProgress: ProgressCallback? = nil
   var onSendProgress: ProgressCallback? = nil
   var session: URLSession
-  
+
   init(session: URLSession) {
     self.session = session
   }
-  
-  deinit {
-    print("Download Service Deinit")
-  }
-  
-  func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
+
+  func urlSession(
+    _ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64,
+    totalBytesSent: Int64, totalBytesExpectedToSend: Int64
+  ) {
     print("ON SEND DATA")
     if let onSendProgress {
-        onSendProgress(Int(totalBytesSent), Int(totalBytesExpectedToSend))
+      onSendProgress(Int(totalBytesSent), Int(totalBytesExpectedToSend))
     }
   }
 

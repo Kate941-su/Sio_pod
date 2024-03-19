@@ -144,9 +144,6 @@ public struct Sio: SioRepository {
     onReceiveProgress: ProgressCallback? = nil
   ) async throws -> Response {
     let finalOptions = getFinalOptions(requestOptions: options)
-
-    print("URI: \(uri)")
-
     guard
       let request = try encodeRequest(uri: uri, options: finalOptions, requestMethod: requestMethod)
     else {
@@ -154,12 +151,16 @@ public struct Sio: SioRepository {
     }
     var data: Data
     var response: URLResponse
-    if #available(iOS 15.0, *) {
-      urlSessionTaskService.onSendProgress = onSendProgress
-      urlSessionTaskService.onReceiveProgress = onReceiveProgress
-      (data, response) = try await session.data(for: request, delegate: urlSessionTaskService)
-    } else {
-      (data, response) = try await session.data(for: request)
+    do {
+      if #available(iOS 15.0, *) {
+        urlSessionTaskService.onSendProgress = onSendProgress
+        urlSessionTaskService.onReceiveProgress = onReceiveProgress
+        (data, response) = try await session.data(for: request, delegate: urlSessionTaskService)
+      } else {
+        (data, response) = try await session.data(for: request)
+      }
+    } catch {
+      throw SioError.couldNotConnectServer(uri: uri, error: error)
     }
     let sioResponse = try decodeResponse(options: finalOptions, data: data, response: response)
     return sioResponse
@@ -172,7 +173,11 @@ public struct Sio: SioRepository {
   func download(
     uri: URL
   ) async throws -> (URL?, URLResponse?) {
-    return try await session.download(for: URLRequest(url: uri))
+    do {
+      return try await session.download(for: URLRequest(url: uri))
+    } catch {
+      throw SioError.couldNotConnectServer(uri: uri, error: error)
+    }
   }
 
   func encodeRequest(uri: URL, options: OptionProtcol, requestMethod: RequestMethod?) throws
@@ -240,6 +245,12 @@ public struct Sio: SioRepository {
         statusCode: httpURLResponse.statusCode)
     else {
       throw SioError.unknownStatusCode(statusCode: httpURLResponse.statusCode)
+    }
+
+    if statusCode.rawValue >= 400 && statusCode.rawValue < 500 {
+      throw SioError.invalidStatus(statusCode: statusCode)
+    } else if statusCode.rawValue >= 500 && statusCode.rawValue < 600 {
+      throw SioError.invalidStatus(statusCode: statusCode)
     }
 
     // Date Format

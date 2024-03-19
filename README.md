@@ -1,239 +1,153 @@
-# Sio Specifications
+# Sio
 
-This project is affected by Dio flutter Http client package.
+This library `Sio` is affected by `Dio` which is one of the most common http client library.
+`Dio` has a lot of features that are very useful of http connection. Sio picks up some useful
+features from `Dio` and implement them as a wrapper of `URLSession`, which library also deal
+with http connection,
 
-## HTTP Request
+# Get started
 
-### Get
+## Install
+
+To add this package, you can get the following step
+
+1. Open Xcode
+2. Click `Add Package Dependency...` on the Navigation bar in Mac.
+3. Input `https://github.com/Kate941-su/Sio` on the top right serchbar.
+
+Welcome to Sio!
+
+## Examples
+
+### Performing a `GET` request
 
 ```swift
-let sio = Sio()
-
-// Simplest
-var response: Response  = await sio.get('https://dart.dev')
-
-// Get with query parametors
-response = await dio.get(
-  '/test',
-  queryParameters: {'id': 12, 'name': 'dio'},
-);
-
-// Get with response type (Text(default), byte, Stream(after v1.0.0))
-response = await dio.get<T = [Int]>(
-  '/test',
-  options: Options(responseType: ResponseType.byte),
-);
-
-
-print(response.data.toString())
+var sio = Sio()
+/// You can define a base URI. Once you define a baseURI, you can focus
+/// on the location path
+sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
+let response: Response = try await sio.get(path: "api/get/json")
+let dict:[String: Any] = response.json
 ```
 
-### Post
+### Performing a `POST` request
 
 ```swift
-let response: Response = await sio.post('/test', data: {'id': 12, 'name': 'dio'})
+var sio = Sio()
+let data: [String: Any] = ["name": "Kate941-su", "age" : 26]
+sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000/")
+let response = try await sio.post(path: "api/post/json", data: data)
+```
 
-let response: Response = await sio.post('/test', data: {'id': 12, 'name': 'dio'}, onSendProgress: (int send, int total){  print(total) })
-// The type of completion handler => (Int, Int) -> Void
+### Download a file
 
-enum ListFormat { //(v1 support)
-  case FormD ata: (application/x-www-form-urlencoded)
-  case Multipart Form Data: (multipart/form-data) => after v1?
-  case Plain Text: (text/plain)
-  case Binary Data: (binary)
-  case XML: (application/xml)
+! This feature only can be used ios 15.0 at least.
+
+```swift
+var sio = Sio()
+if #available(iOS 15.0, *) {
+  var sio = Sio()
+  sio.baseOptions.baseURI = URL(string: "http://127.0.0.1:8000")
+  let (filePath, response) = try await sio.download(path: "/api/get/download/video")
 }
-
 ```
 
-### Download
+you can put `URI` directly by using `xxxUri()` methods.
 
 ```swift
-let response: Response = await sio.download(xxx) // downloading a file for local device strage
+sio.baseOptions.requestHeader = [
+  RequestHeader(headerField: "Content-Type", headerValue: "application/json")
+]
+let response = try await sio.postUri(uri: URL(string: "http://127.0.0.1:8000/api/post/uri/json")!)
 ```
 
-### Put
+you also can use `postUri()` and `downloadUri`
+
+# Sio APIs
+
+## Creating an instance and set default config
+
+> If you want to use only one instance, it is recommended to use a singlegon of `Sio` in your project to avoid unknowing error.
+
+`Sio` has a base options.
+
+### Example
 
 ```swift
-let response: Response = await sio.put(xxx) // downloading a file for local device strage
+var sio = Sio()
+sio.baseOptions.baseUri = "https://api.cocoapods.org"
+sio.baseOptions.mimyType = "applicationJson"
+sio.baseOptions.queryParameters = ["test1" : "1", "test2" : "2"]
+sio.baseOptions.timeout = 5.0
 ```
 
-### API
+you can override `options` when you set a options in the `options` argument.
 
-#### Basic Usage
+The priority is
 
-```
-let sio = Sio()
-sio.options.baseURL = xxxx(: URL)
-sio.options.connectTimeout = x(: TimeInterval (alias of Double))
-sio.options.receiveTimeout = x(: TimeInterval (alias of Double))
+1. The option you set in the http method.
+2. The option you set in the sio instance.
 
-let options: Options = BaseOptions(
-  baseURL: URL,
-  connectTimeout: TimeInterval,
-  receiveTimeout: TimeInterval
-)
-let anotherSio: Sio = Sio(options)
+! RequestOptions and BaseOptions have same arguments and adopt same protcol.
+but in the future, they will have different arguments (RequestOptions will have another arguments). But you can set both of them in the `options` argument.
+
+```swift
+var sio = Sio()
+let requestOptions: RequestOptions = RequestOptions(timeout: 3.0)
+let response: Response = try await sio.get(path: "api/get/json", options: requestOptions)
 ```
 
-#### Core API
+Base http connection of API is:
 
-**requestAPI**
-
-```
-Response<T> request<T>(
+```swift
+  func request(
     uri: URL,
-    data: Any?,
-    queryParameters: [String: Any]?,
-    cancelToken: CancelToken?,
-    options: RequestOptions?,
-    onSendProgress: ProgressCallback?,
-    onReceiveProgress: ProgressCallback?
-)
+    options: OptionProtcol,
+    requestMethod: RequestMethod,
+    onSendProgress: ProgressCallback? = nil,
+    onReceiveProgress: ProgressCallback? = nil
+  ) async throws -> Response
 ```
 
-**Options**
+### Response type
 
 ```swift
-responseType: ResponseType
-  listFormat: ListFormat
-  headers: [String : Any],
-  validateStatus; // after v1
-  receiveDataWhenStatusError;  // after v1
-  extra:   // after v1
-  followRedirects :Bool : // after v1
-  maxRedirects: Int // after v1
-  persistentConnection: Bool // after v1
+public class Response{
+  // The data of response body
+  let data: Data
+  // This feature is implementes in the future
+  let statusCode: StatusCode
+  let mimeType: String
+  let date: Date?
+  let contentLength: Int
+  // You can get raw http response data.
+  // Now, you can extract statusCode
+  // in the header structed by json type
+  let respnseHeader: URLResponse
+  }
 ```
 
-get(), post(), request(), download(), put() call request()
-
-BaseOptions <- implement or extend - RequestOptions
-
-RequestEncoder => encoding request data from type of request options to URLSession.
-ResponseDecoder => encoding response data from type of URLSession to response data.
-
-### Exception
+If you can get a response successfully, you can convert data type as swift type.
 
 ```swift
-SioException : Exception, ResponseProtcol {
-  errorCode: ResponseStatus?,// If timeout not needed
-  message: ResponseStatus.message, // assume enum string
-  response: Response? = nil,
-  error: Any // v1 apply raw value of getting from URLSession.
+let response = try await sio.postUri(uri: URL(string: "http://127.0.0.1:8000/api/post/uri/json")!)
+
+let map: [String: Any] = response.json
+let text: String = response.text
+// let data = response.data : default
+```
+
+## Exception
+
+When an error occurs, Sio will wrap the `Error` to a `SioError`
+// Got 404
+do {
+  let response = try await sio.get(path: "api/get/json")
+} catch {
+  print(error.message) // 404 - Not Found
+  print(error.statusCode) // StatusCode.not_found
 }
-```
 
-### TypeAliase
-
-```swift
-public typealias RequestHeader = [String: Any]
-public typealias ProgressCallback = (Int, Int) -> Void
-```
-
-# Knowladges
-
-### GET: ⭐️
-
-The GET method requests a representation of the specified resource. Requests using GET should only retrieve data.
-
-### HEAD: ⭐️
-
-The HEAD method asks for a response identical to a GET request, but without the response body.
-
-### POST: ⭐️
-
-The POST method submits an entity to the specified resource, often causing a change in state or side effects on the server.
-
-### PUT: ⭐️
-
-The PUT method replaces all current representations of the target resource with the request payload.
-
-### DELETE
-
-The DELETE method deletes the specified resource.
-
-### CONNECT
-
-The CONNECT method establishes a tunnel to the server identified by the target resource.
-
-### OPTIONS
-
-The OPTIONS method describes the communication options for the target resource.
-
-### TRACE
-
-The TRACE method performs a message loop-back test along the path to the target resource.
-
-### PATCH
-
-The PATCH method applies partial modifications to a resource.
-
-Methods that is marked ⭐️ will be implemented at 1.0.0
-
-## HTTP Response
-
-
-## Sio API
-
-### Options
-
-#### Request Header
-
-Host: URL
-
-User-Agent: String?
-
-Content-Type: String?
-
-Content-Length: String? (not necessary)
-
-Authorization: String?
-
-Accept: String?
-
-Cookie: String?
-
-Cache-Control: クライアントがキャッシュの動作を指示するためのディレクティブを含みます。
-
-Referer: リクエストが発生した元のページの URL を示します。
-
-Origin: String?
-
-#### Request Body
-
-1. Text type (XML, JSON)
-
-2. Form (application/x-www-form-urlencoded or multipart/form-data)
-
-3. binary
-
-post<T: where T : <String: Any>, Something Form Type, [Int]>
-
-#### Default Options
-
-#### Response Type
-
-````swift
-enum ResponseType {
-/// Transform the response data to JSON object only when the
-/// content-type of response is "application/json" .
-case json
-
-/// Transform the response data to an UTF-8 encoded [String].
-case plain
-
-/// Get the original bytes, the [Response.data] will be [List<int>].
-case bytes
-
-/// Get the response stream directly,
-/// the [Response.data] will be [ResponseBody].
-///
-/// ```dart
-/// Response<ResponseBody> rs = await Dio().get<ResponseBody>(
-/// url,
-/// options: Options(responseType: ResponseType.stream),
-/// );
-stream, // after v1
-}
-````
+## Welcome to Contribute 👋
+If you feel good to use this library and you want it to be better,
+feel free to make a issue and comment it.

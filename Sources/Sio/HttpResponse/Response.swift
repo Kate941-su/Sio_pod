@@ -8,11 +8,15 @@
 import Foundation
 
 public class Response {
+  // The data of response body
   let data: Data
   let statusCode: StatusCode
   let mimeType: String
   let date: Date?
   let contentLength: Int
+  // You can get raw http response data.
+  // Now, you can extract statusCode
+  // in the header structed by json type
   let respnseHeader: URLResponse
 
   init(

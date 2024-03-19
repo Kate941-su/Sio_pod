@@ -70,4 +70,16 @@ public class SioError: Error {
     )
   }
 
+  static public func invalidStatus(
+    statusCode: StatusCode
+  ) -> SioError {
+    return SioError(message: "\(statusCode) - \(statusCode.name)", statusCode: statusCode)
+  }
+
+  static public func couldNotConnectServer(
+    uri: URL,
+    error: Error
+  ) -> SioError {
+    return SioError(message: "Could not connect server to \(uri)", body: error)
+  }
 }
