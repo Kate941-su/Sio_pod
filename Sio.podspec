@@ -25,6 +25,10 @@ Pod::Spec.new do |spec|
   #   * Write the description between the DESC delimiters below.
   #   * Finally, don't worry about the indent, CocoaPods strips it!
   spec.description  = <<-DESC
+  This library `Sio` is affected by `Dio` which is one of the most common http client library.
+`Dio` has a lot of features that are very useful of http connection. Sio picks up some useful
+features from `Dio` and implement them as a wrapper of `URLSession`, which library also deal
+with http connection,q
                    DESC
 
   spec.homepage     = "https://github.com/Kate941-su/Sio"
@@ -79,7 +83,7 @@ Pod::Spec.new do |spec|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  spec.source       = { :git => "https://github.com/Kate941-su/Sio", :tag => "1.0.0" }
+  spec.source       = { :git => "https://github.com/Kate941-su/Sio.git", :tag => "1.0.0" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
@@ -90,7 +94,7 @@ Pod::Spec.new do |spec|
   #  Not including the public_header_files will make all headers public.
   #
 
-  spec.source_files  = ["Sio/**/*.swift"]
+  spec.source_files  = "*.swift"
   # spec.exclude_files = "Classes/Exclude"
 
   # spec.public_header_files = "Classes/**/*.h"
